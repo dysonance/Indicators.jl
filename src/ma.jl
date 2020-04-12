@@ -6,7 +6,7 @@ sma(x::Array{T}; n::Int64=10)::Array{T}
 Simple moving average (SMA)
 """
 function sma(x::Array{T}; n::Int64=10)::Array{T} where {T<:Real}
-    return runmean(x, n=n, cumulative=false)
+    return runmean(convert(Array{Float64}, x), n=n, cumulative=false)
 end
 
 """
