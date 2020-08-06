@@ -319,3 +319,40 @@ function smi(hlc::Matrix{T}; n::Int64=13, nFast::Int64=2, nSlow::Int64=25, nSig:
     out[:,2] = maSig(out[:,1], n=nSig)
     return out
 end
+
+
+
+
+
+
+function MFI_logic(x::Array{T}; n::Int64=14, args...)::Array{T} where {T<:Real}
+    @assert n<size(x,1) && n>0 "Argument n is out of bounds."
+    N = size(x,1)
+    ups = zeros(N)
+    dns = zeros(N)
+    zro = 0.0
+    dx = [NaN; ndims(x[:,2]) > 1 ? diff(x[:,2], dims=1) : diff(x[:,2])]
+    @inbounds for i=2:N
+        if dx[i] > zro
+            ups[i] = x[i,3]
+        elseif dx[i] < zro
+            dns[i] = x[i,3]
+        end
+    end
+    rs = sma(ups[1:end], n=n;) ./ sma(dns[1:end], n=n;)
+    return 100.0 .- 100.0 ./ (1.0 .+ rs)
+end
+
+
+function MFI(X::TS, flds::Vector{Symbol}; args...)
+    if size(X,2) > 1 && has_close(X)
+        typical_price = sum(X[[:high, :low, :close]].values, dims = 2)/3
+        close = X[:close].values
+        volume = X[:volume].values
+        rmf = typical_price.*volume
+        return ts(MFI_logic([close typical_price rmf]; args...), X.index, flds)
+        #return ts(MFI_logic(X.values; args...), X.index, flds)
+    else
+        error("Must be univariate or contain Close/Settle/Last.")
+    end
+end
