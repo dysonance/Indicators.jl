@@ -321,10 +321,9 @@ function smi(hlc::Matrix{T}; n::Int64=13, nFast::Int64=2, nSlow::Int64=25, nSig:
 end
 
 
-
-
-
-
+"""
+MFI (Money Flow Index) gives almost the same results as tradingview.com
+"""
 function MFI_logic(x::Array{T}; n::Int64=14, args...)::Array{T} where {T<:Real}
     @assert n<size(x,1) && n>0 "Argument n is out of bounds."
     N = size(x,1)
@@ -343,7 +342,7 @@ function MFI_logic(x::Array{T}; n::Int64=14, args...)::Array{T} where {T<:Real}
     return 100.0 .- 100.0 ./ (1.0 .+ rs)
 end
 
-
+##### X::TS should contain traditional OHLC+Volume too
 function MFI(X::TS, flds::Vector{Symbol}; args...)
     if size(X,2) > 1 && has_close(X)
         typical_price = sum(X[[:high, :low, :close]].values, dims = 2)/3
